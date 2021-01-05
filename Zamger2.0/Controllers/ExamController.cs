@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Zamger2._0.Models;
 
 namespace Zamger2._0.Controllers
 {
@@ -24,7 +25,9 @@ namespace Zamger2._0.Controllers
         // GET: ExamController/Create
         public ActionResult Create()
         {
-            return View();
+            var model = new ExamViewModel();
+            model.Subject = "1";
+            return View(model);
         }
 
         // POST: ExamController/Create

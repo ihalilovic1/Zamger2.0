@@ -1,0 +1,26 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model ExamViewModel
+@section scripts{
+    <partial name="_ValidationScriptsPartial" />
+}
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+<form method="post">
+    <div class="form-group">
+        <select asp-for="Subject" asp-items="Model.Subjects"></select>
+    </div>
+    
+    <div class="form-group">
+        <label asp-for="Description"></label>
+        <input asp-for="Description" class="form-control" placeholder="Enter Description" autocomplete="off" />
+    </div>
+    <div class="form-group">
+        <label asp-for="Deadline"></label>
+        <input type="datetime-local" asp-for="Deadline" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
