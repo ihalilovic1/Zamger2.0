@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ using Zamger2._0.Models;
 
 namespace Zamger2._0.Controllers
 {
+    [Authorize(Roles = "profesor")]
     public class ExamController : Controller
     {
         // GET: ExamController
