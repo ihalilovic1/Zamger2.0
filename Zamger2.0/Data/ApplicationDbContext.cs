@@ -15,6 +15,14 @@ namespace Zamger2._0.Data
         {
         }
 
+        public DbSet<Subject> Subjects { get; set; }
+        public DbSet<Exam> Exams { get; set; }
+        public DbSet<Homework> Homeworks { get; set; }
+        public DbSet<Document> Documents { get; set; }
+        public DbSet<SubmitedHomework> SubmitedHomeworks { get; set; }
+        public DbSet<ExamSignUp> ExamSignUps { get; set; }
+
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
