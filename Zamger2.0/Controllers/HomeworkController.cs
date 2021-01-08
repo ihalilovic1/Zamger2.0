@@ -25,6 +25,13 @@ namespace Zamger2._0.Controllers
             return View(await applicationDbContext.ToListAsync());
         }
 
+        public async Task<IActionResult> IndexStudent()
+        {
+            
+            return View();
+        }
+
+
         // GET: Homework/Details/5
         public async Task<IActionResult> Details(int? id)
         {
