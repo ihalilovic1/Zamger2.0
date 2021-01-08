@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -21,7 +22,13 @@ namespace Zamger2._0.Controllers
             _context = context;
         }
         // GET: Exam
-        public ActionResult Index()
+        public ActionResult IndexProfesor()
+        {
+
+            return View();
+        }
+        // GET: Exam
+        public ActionResult IndexStudent()
         {
 
             return View();
@@ -34,6 +41,7 @@ namespace Zamger2._0.Controllers
         }
 
         // GET: Exam/Create
+        [Authorize(Roles = "profesor")]
         public async Task<ActionResult> CreateAsync()
         {
             List < Subject > results = new List<Subject>();
