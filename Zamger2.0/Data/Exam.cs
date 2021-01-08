@@ -19,8 +19,10 @@ namespace Zamger2._0.Data
         public DateTime Time { get; set; }
         [Required]
         public DateTime Deadline { get; set; }
-        public Subject Subject { get; set; }
 
-        public IList<ExamSignUp> ExamSignUps { get; set; }
+        public int SubjectId { get; set; }
+        public virtual Subject Subject { get; set; }
+
+        public virtual IList<ExamSignUp> ExamSignUps { get; set; }
     }
 }

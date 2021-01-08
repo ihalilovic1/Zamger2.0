@@ -13,9 +13,10 @@ namespace Zamger2._0.Data
         public int Id { get; set; }
         [Required]
         public string Name { get; set; }
-        public IdentityUser Profesor { get; set; }
-        public IList<Homework> Homeworks { get; set; }
+        public string ProfesorId { get; set; }
+        public virtual IdentityUser Profesor { get; set; }
+        public virtual IList<Homework> Homeworks { get; set; }
 
-        public IList<Exam> Exams { get; set; }
+        public virtual IList<Exam> Exams { get; set; }
     }
 }

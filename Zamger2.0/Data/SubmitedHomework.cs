@@ -11,8 +11,12 @@ namespace Zamger2._0.Data
     {
         [Required]
         public int Id { get; set; }
-        public IdentityUser Student { get; set; }
-        public Homework Homework { get; set; }
+
+        public string StudentId { get; set; }
+        public virtual IdentityUser Student { get; set; }
+        public virtual Homework Homework { get; set; }
+
+        public int HomeworkId { get; set; }
 
         public DateTime Time { get; set; }
     }

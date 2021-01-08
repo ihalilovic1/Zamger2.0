@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Zamger2._0.Data;
 
 namespace Zamger2._0.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210108200658_db-v5")]
+    partial class dbv5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -262,7 +264,7 @@ namespace Zamger2._0.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("SubjectId")
+                    b.Property<int?>("SubjectId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Time")
@@ -281,7 +283,7 @@ namespace Zamger2._0.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("ExamId")
+                    b.Property<int?>("ExamId")
                         .HasColumnType("int");
 
                     b.Property<string>("StudentId")
@@ -308,14 +310,14 @@ namespace Zamger2._0.Migrations
                     b.Property<DateTime>("Deadline")
                         .HasColumnType("datetime");
 
-                    b.Property<int>("DocumentId")
+                    b.Property<int?>("DocumentId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("SubjectId")
+                    b.Property<int?>("SubjectId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -353,7 +355,7 @@ namespace Zamger2._0.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("HomeworkId")
+                    b.Property<int?>("HomeworkId")
                         .HasColumnType("int");
 
                     b.Property<string>("StudentId")
@@ -426,18 +428,14 @@ namespace Zamger2._0.Migrations
                 {
                     b.HasOne("Zamger2._0.Data.Subject", "Subject")
                         .WithMany("Exams")
-                        .HasForeignKey("SubjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("SubjectId");
                 });
 
             modelBuilder.Entity("Zamger2._0.Data.ExamSignUp", b =>
                 {
                     b.HasOne("Zamger2._0.Data.Exam", "Exam")
                         .WithMany("ExamSignUps")
-                        .HasForeignKey("ExamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ExamId");
 
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Student")
                         .WithMany()
@@ -448,15 +446,11 @@ namespace Zamger2._0.Migrations
                 {
                     b.HasOne("Zamger2._0.Data.Document", "Document")
                         .WithMany()
-                        .HasForeignKey("DocumentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("DocumentId");
 
                     b.HasOne("Zamger2._0.Data.Subject", "Subject")
                         .WithMany("Homeworks")
-                        .HasForeignKey("SubjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("SubjectId");
                 });
 
             modelBuilder.Entity("Zamger2._0.Data.Subject", b =>
@@ -470,9 +464,7 @@ namespace Zamger2._0.Migrations
                 {
                     b.HasOne("Zamger2._0.Data.Homework", "Homework")
                         .WithMany("SubmitedHomeworks")
-                        .HasForeignKey("HomeworkId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("HomeworkId");
 
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Student")
                         .WithMany()
