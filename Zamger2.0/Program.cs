@@ -21,6 +21,7 @@ namespace Zamger2._0
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                    webBuilder.UseWebRoot("wwwroot");
                 });
     }
 }

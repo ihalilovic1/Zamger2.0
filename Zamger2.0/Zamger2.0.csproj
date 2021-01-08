@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>Zamger2._0</RootNamespace>
+    <UserSecretsId>158b3b88-b0ca-4190-b434-20277f635cf3</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
