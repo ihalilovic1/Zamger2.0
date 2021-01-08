@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Zamger2._0.Data;
 
 namespace Zamger2._0.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210107221616_db-v3")]
+    partial class dbv3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -262,6 +264,9 @@ namespace Zamger2._0.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("StudentId")
+                        .HasColumnType("varchar(85)");
+
                     b.Property<int?>("SubjectId")
                         .HasColumnType("int");
 
@@ -269,6 +274,8 @@ namespace Zamger2._0.Migrations
                         .HasColumnType("datetime");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
 
                     b.HasIndex("SubjectId");
 
@@ -424,6 +431,10 @@ namespace Zamger2._0.Migrations
 
             modelBuilder.Entity("Zamger2._0.Data.Exam", b =>
                 {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId");
+
                     b.HasOne("Zamger2._0.Data.Subject", "Subject")
                         .WithMany("Exams")
                         .HasForeignKey("SubjectId");

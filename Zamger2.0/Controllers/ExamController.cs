@@ -1,59 +1,93 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using Zamger2._0.Data;
 using Zamger2._0.Models;
 
 namespace Zamger2._0.Controllers
 {
-    [Authorize(Roles = "profesor")]
     public class ExamController : Controller
     {
-        // GET: ExamController
-        public ActionResult Index()
+
+        private readonly ApplicationDbContext _context;
+
+        public ExamController(ApplicationDbContext context)
         {
+            _context = context;
+        }
+        // GET: Exam
+        public ActionResult IndexProfesor()
+        {
+
+            return View();
+        }
+        // GET: Exam
+        public ActionResult IndexStudent()
+        {
+
             return View();
         }
 
-        // GET: ExamController/Details/5
+        // GET: Exam/Details/5
         public ActionResult Details(int id)
         {
             return View();
         }
 
-        // GET: ExamController/Create
-        public ActionResult Create()
+        // GET: Exam/Create
+        [Authorize(Roles = "profesor")]
+        public async Task<ActionResult> CreateAsync()
         {
+            List < Subject > results = new List<Subject>();
+            results.AddRange(await _context.Subjects.ToListAsync());
+            
+            var subjects = new List<string>();
+            foreach (Subject s in results) {
+                subjects.Add(s.Name);
+            }
+            var selectListItems = subjects.Select(x => new SelectListItem() { Value = x, Text = x }).ToList();
             var model = new ExamViewModel();
-            model.Subject = "1";
+            model.Subjects = selectListItems;
+            model.Subject = selectListItems.First().Value;
             return View(model);
         }
 
-        // POST: ExamController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<IActionResult> Create( ExamViewModel exam)
         {
-            try
+            if (ModelState.IsValid)
             {
+                Subject s = new Subject();
+                s = await _context.Subjects.FirstOrDefaultAsync(m => m.Name == exam.Subject);
+                _context.Exams.Add(new Exam()
+                {
+
+                    Name = exam.Name,
+                    Deadline = exam.Deadline,
+                    Time = DateTime.Now,
+                    Subject = s
+                });
+
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            catch
-            {
-                return View();
-            }
+            return View(exam);
         }
 
-        // GET: ExamController/Edit/5
+        // GET: Exam/Edit/5
         public ActionResult Edit(int id)
         {
             return View();
         }
 
-        // POST: ExamController/Edit/5
+        // POST: Exam/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, IFormCollection collection)
@@ -68,13 +102,13 @@ namespace Zamger2._0.Controllers
             }
         }
 
-        // GET: ExamController/Delete/5
+        // GET: Exam/Delete/5
         public ActionResult Delete(int id)
         {
             return View();
         }
 
-        // POST: ExamController/Delete/5
+        // POST: Exam/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id, IFormCollection collection)
