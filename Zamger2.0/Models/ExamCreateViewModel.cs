@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Zamger2._0.Models
 {
-    public class ExamViewModel
+    public class ExamCreateViewModel
     {
         [BindProperty]
         [Required]
