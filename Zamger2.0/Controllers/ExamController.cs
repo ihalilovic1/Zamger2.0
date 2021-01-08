@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -24,7 +25,6 @@ namespace Zamger2._0.Controllers
         // GET: Exam
         public ActionResult IndexProfesor()
         {
-
             return View();
         }
         // GET: Exam
@@ -44,15 +44,17 @@ namespace Zamger2._0.Controllers
         [Authorize(Roles = "profesor")]
         public async Task<ActionResult> CreateAsync()
         {
+            ClaimsPrincipal currentUser = this.User;
+            var currentUserID = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
             List < Subject > results = new List<Subject>();
-            results.AddRange(await _context.Subjects.ToListAsync());
+            results.AddRange(await _context.Subjects.Where(t => t.Profesor.Id == currentUserID).ToListAsync());
             
             var subjects = new List<string>();
             foreach (Subject s in results) {
                 subjects.Add(s.Name);
             }
             var selectListItems = subjects.Select(x => new SelectListItem() { Value = x, Text = x }).ToList();
-            var model = new ExamViewModel();
+            var model = new ExamCreateViewModel();
             model.Subjects = selectListItems;
             model.Subject = selectListItems.First().Value;
             return View(model);
@@ -60,7 +62,7 @@ namespace Zamger2._0.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create( ExamViewModel exam)
+        public async Task<IActionResult> Create( ExamCreateViewModel exam)
         {
             if (ModelState.IsValid)
             {
