@@ -36,16 +36,29 @@ namespace Zamger2._0
                 .AddDefaultUI()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
-            services.AddControllersWithViews();
+            services.AddControllersWithViews()
+            .AddRazorPagesOptions(options =>
+            {
+                options.Conventions.AddAreaFolderRouteModelConvention("Identity", "/Account", model =>
+                {
+                    var selectorCount = model.Selectors.Count;
 
-            //services.AddAuthorization(options =>
-            //{
-            //    options.FallbackPolicy = new AuthorizationPolicyBuilder()
-            //        .RequireAuthenticatedUser()
-            //        .Build();
-            //});
+                    var whitelistedIdentityEndpoints = new List<string>
+                    { 
+                        "Identity/Account/Manage", "Identity/Account/Manage/ChangePassword", "Identity/Account/Login", "Identity/Account/AccessDenied", "Identity/Account/Logout"
+                    };
 
-            Seed.Initialize(services.BuildServiceProvider(), "Test123!");
+                    for (var i = selectorCount - 1; i >= 0; i--)
+                    {
+                        var selectorTemplate = model.Selectors[i].AttributeRouteModel.Template;
+
+                        if (!whitelistedIdentityEndpoints.Contains(selectorTemplate))
+                            model.Selectors.RemoveAt(i);
+                    }
+                });
+            }); ;
+
+            //Seed.Initialize(services.BuildServiceProvider(), "Test123!");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -63,7 +76,7 @@ namespace Zamger2._0
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-
+            app.UseStatusCodePagesWithReExecute("/Home/Error");
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
@@ -82,7 +95,10 @@ namespace Zamger2._0
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}")
                 .RequireAuthorization();
-                
+
+                //endpoints.Map("/Identity/Account/Manage");
+                //endpoints.Map("/Identity/Account/Manage/ChangePassword");
+                //endpoints.Map("/Account/Login");
                 endpoints.MapRazorPages();
             });
         }
