@@ -45,9 +45,103 @@ namespace Zamger2._0.Controllers
         [Authorize(Roles = "student")]
         public async Task<IActionResult> IndexStudent()
         {
+            ClaimsPrincipal currentUser = this.User;
+            var currentUserID = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            var exams = await _context.Exams.Where(x => x.Deadline <= DateTime.Now).ToListAsync();
+            if (exams != null)
+            {
+                foreach (Exam exam in exams)
+                {
+                    Subject s = new Subject();
+                    s = _context.Subjects.FirstOrDefault(m => m.Id == exam.SubjectId);
+
+                    var examSignUps = _context.ExamSignUps.Where(m => m.Exam.Id == exam.Id).ToList();
+                    if (examSignUps != null)
+                    {
+                        foreach (ExamSignUp signup in examSignUps)
+                        {
+                            IdentityUser u = new IdentityUser();
+                            u = await _context.Users.FirstOrDefaultAsync(m => m.Id.Equals(signup.StudentId));
+                            signup.Student = u;
+                            
+                        }
+
+                    }
+
+                    exam.ExamSignUps = examSignUps;
+                    exam.Subject = s;
+                    System.Diagnostics.Debug.WriteLine("hello");
+                    ViewBag.Current = currentUserID;
+
+                    //var a = exam.ExamSignUps.FirstOrDefault(m => m.Student.Id.Equals(currentUserID));
+                    
+                    
+                    
+                    
+                }
+
+            }
             
-            return View();
+
+            
+
+
+
+            return View(exams);
         }
+
+        [Authorize(Roles = "student")]
+        public async Task<IActionResult> SignUp(int id)
+        {
+            System.Diagnostics.Debug.WriteLine("evo me");
+            System.Diagnostics.Debug.WriteLine(id);
+            
+
+            ClaimsPrincipal currentUser = this.User;
+            var currentUserID = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var exist = _context.ExamSignUps.FirstOrDefault(m => m.ExamId == id && m.StudentId == currentUserID);
+            if (exist == null)
+            {
+                _context.ExamSignUps.Add(new ExamSignUp()
+                {
+                    ExamId = id,
+                    StudentId = currentUserID,
+                    Time = DateTime.Now
+                });
+
+                await _context.SaveChangesAsync();
+            }
+            
+
+            return RedirectToAction(nameof(IndexStudent));
+            
+        }
+
+        [Authorize(Roles = "student")]
+        public async Task<IActionResult> SignOut(int id)
+        {
+            System.Diagnostics.Debug.WriteLine("evo me");
+            System.Diagnostics.Debug.WriteLine(id);
+
+
+            ClaimsPrincipal currentUser = this.User;
+            var currentUserID = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var exist = _context.ExamSignUps.FirstOrDefault(m => m.ExamId == id && m.StudentId == currentUserID);
+            if (exist != null)
+            {
+
+                var examSignUp = await _context.ExamSignUps.FindAsync(exist.Id);
+                _context.ExamSignUps.Remove(examSignUp);
+                await _context.SaveChangesAsync();
+            }
+
+
+            return RedirectToAction(nameof(IndexStudent));
+
+        }
+
+
 
         [Authorize(Roles = "profesor")]
         // GET: Exams/Details/5
@@ -227,5 +321,8 @@ namespace Zamger2._0.Controllers
         {
             return _context.Exams.Any(e => e.Id == id);
         }
+
+
+        
     }
 }

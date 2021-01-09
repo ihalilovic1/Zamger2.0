@@ -1,6 +1,66 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model IEnumerable<Zamger2._0.Data.Exam>
+
 @{
+    ViewData["Title"] = "Exams";
 }
-StudentHomework
+
+<h1>Exams</h1>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Subject.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Time)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Deadline)
+            </th>
+            
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Subject.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Time)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Deadline)
+            </td>
+            
+            <td>
+
+                
+                @if (item.ExamSignUps.FirstOrDefault(m => m.Student.Id.Equals(ViewBag.Current))!=null)
+                {
+                    <a asp-action="SignOut" asp-route-id="@item.Id">SignOut</a>
+                }
+                else
+                {
+                    <a asp-action="SignUp" asp-route-id="@item.Id">SignUp</a>
+                }
+
+
+
+
+            </td>
+
+        </tr>
+                }
+    </tbody>
+</table>
