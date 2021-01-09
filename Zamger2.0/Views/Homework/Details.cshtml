@@ -35,8 +35,11 @@
     @if (User.IsInRole("profesor"))
     {
         <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
-        <span> | </span>
+    }
+    else
+    {
+        <a asp-action="Submit" asp-route-id="@Model.Id">Submit</a>
     }
 
-    <a asp-action="Index">Back to List</a>
+    | <a asp-action="Index">Back to List</a>
 </div>

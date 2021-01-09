@@ -50,6 +50,8 @@ namespace Zamger2._0.Data
             builder.Entity<IdentityUserClaim<string>>(entity => entity.Property(m => m.UserId).HasMaxLength(85));
             builder.Entity<IdentityRoleClaim<string>>(entity => entity.Property(m => m.Id).HasMaxLength(85));
             builder.Entity<IdentityRoleClaim<string>>(entity => entity.Property(m => m.RoleId).HasMaxLength(85));
+
+            builder.Entity<Document>(entity => entity.Property(d => d.Data).HasColumnType("mediumblob"));
         }
     }
 }

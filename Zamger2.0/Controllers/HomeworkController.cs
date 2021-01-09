@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -96,6 +97,112 @@ namespace Zamger2._0.Controllers
             _context.Homeworks.Add(homework);
             await _context.SaveChangesAsync();
 
+            return RedirectToAction(nameof(Details), new { id = homework.Id });
+
+        }
+
+        // GET: Homework/Submit
+        [Authorize(Roles = "student")]
+        public IActionResult Submit(int id)
+        {
+            var homework = _context.Homeworks
+                .Include(h => h.Subject)
+                .FirstOrDefault(h => h.Id == id);
+
+            if(homework == null)
+            {
+                return NotFound();
+            }
+
+            var model = new HomeworkSubmitViewModel
+            {
+                Id = homework.Id,
+                SubjectName = homework.Subject.Name,
+                Name = homework.Name
+            };
+
+            return View(model);
+        }
+
+        // POST: Homework/Submit
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
+        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [Authorize(Roles = "student")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Submit([Bind("Id,Document")] HomeworkSubmitViewModel submitViewModel)
+        {
+            var homework = _context.Homeworks
+               .Include(h => h.Subject)
+               .FirstOrDefault(h => h.Id == submitViewModel.Id);
+
+            if (homework == null)
+            {
+                return NotFound();
+            }
+
+            if (homework.Deadline < DateTime.Now)
+            {
+                ModelState.AddModelError("Document", "Deadline passed");
+            }
+            if (!ModelState.IsValid)
+            {
+                submitViewModel.Name = homework.Name;
+                submitViewModel.SubjectName = homework.Subject.Name;
+
+                return View(submitViewModel);
+            }
+
+            var submited = await _context.SubmitedHomeworks
+                .Include(sh => sh.Document)
+                .FirstOrDefaultAsync(sh => sh.StudentId == User.GetLoggedInUserId<string>() && sh.HomeworkId == homework.Id);
+
+            if(submited != null)
+            {
+                _context.SubmitedHomeworks.Remove(submited);
+                _context.Documents.Remove(submited.Document);
+            }
+
+            var extension = Path.GetExtension(submitViewModel.Document.FileName);
+
+            if(extension == null ||extension.Length > 4)
+            {
+                return BadRequest("Not supported file type");
+            }
+            var document = new Document
+            {
+                Name = $"homework_{homework.Id}_{DateTime.Now}",
+                ContentType = submitViewModel.Document.ContentType,
+                Extension = extension
+            };
+
+            using (var memoryStream = new MemoryStream())
+            {
+                await submitViewModel.Document.CopyToAsync(memoryStream);
+
+                if (memoryStream.Length > 2097152)
+                {
+                    ModelState.AddModelError("File", "The file is larger than 2MB.");
+                    submitViewModel.Name = homework.Name;
+                    submitViewModel.SubjectName = homework.Subject.Name;
+
+                    return View(submitViewModel);
+                }
+
+                document.Data = memoryStream.ToArray();
+            }
+
+            _context.Documents.Add(document);
+            submited = new SubmitedHomework
+            {
+                StudentId = User.GetLoggedInUserId<string>(),
+                HomeworkId = homework.Id,
+                Time = DateTime.Now,
+                Document = document
+            };
+            _context.SubmitedHomeworks.Add(submited);
+
+            _context.SaveChanges();
             return RedirectToAction(nameof(Details), new { id = homework.Id });
 
         }

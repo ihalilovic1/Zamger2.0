@@ -18,6 +18,7 @@ namespace Zamger2._0.Data
         public string ContentType { get; set; }
         [Required]
         public string Extension { get; set; }
+
         public byte[] Data { get; set; }
     }
 }

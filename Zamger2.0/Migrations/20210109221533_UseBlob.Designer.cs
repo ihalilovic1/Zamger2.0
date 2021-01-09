@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Zamger2._0.Data;
 
 namespace Zamger2._0.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210109221533_UseBlob")]
+    partial class UseBlob
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -234,7 +236,7 @@ namespace Zamger2._0.Migrations
                         .HasColumnType("text");
 
                     b.Property<byte[]>("Data")
-                        .HasColumnType("mediumblob");
+                        .HasColumnType("varbinary(4000)");
 
                     b.Property<string>("Extension")
                         .IsRequired()
