@@ -9,7 +9,7 @@ using Zamger2._0.Models;
 
 namespace Zamger2._0.Data
 {
-    public class Exam
+    public class Exam :IValidatableObject
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Required]
@@ -28,5 +28,16 @@ namespace Zamger2._0.Data
         public virtual Subject Subject { get; set; }
 
         public virtual IList<ExamSignUp> ExamSignUps { get; set; }
+        IEnumerable<ValidationResult> IValidatableObject.Validate(ValidationContext validationContext)
+        {
+            List<ValidationResult> res = new List<ValidationResult>();
+            if (Time < Deadline)
+            {
+                ValidationResult mss = new ValidationResult("Time date must be greater than or equal to Deadline");
+                res.Add(mss);
+
+            }
+            return res;
+        }
     }
 }
