@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Zamger2._0.Data;
+using Zamger2._0.Helpers;
 using Zamger2._0.Models;
 
 namespace Zamger2._0.Controllers
@@ -71,7 +72,7 @@ namespace Zamger2._0.Controllers
 
                     exam.ExamSignUps = examSignUps;
                     exam.Subject = s;
-                    System.Diagnostics.Debug.WriteLine("hello");
+                    
                     ViewBag.Current = currentUserID;
 
                     //var a = exam.ExamSignUps.FirstOrDefault(m => m.Student.Id.Equals(currentUserID));
@@ -255,17 +256,30 @@ namespace Zamger2._0.Controllers
         [Authorize(Roles = "profesor")]
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var exam = await _context.Exams.FindAsync(id);
+            var exam = await _context.Exams
+              .FirstOrDefaultAsync(h => h.Id == id && h.Subject.ProfesorId == User.GetLoggedInUserId<string>());
             if (exam == null)
             {
                 return NotFound();
             }
-            return View(exam);
+            List<Subject> results = new List<Subject>();
+            results.AddRange(await _context.Subjects.Where(t => t.Profesor.Id == User.GetLoggedInUserId<string>()).ToListAsync());
+
+            var subjects = new List<string>();
+            foreach (Subject s in results)
+            {
+                subjects.Add(s.Name);
+            }
+            var selectListItems = subjects.Select(x => new SelectListItem() { Value = x, Text = x }).ToList();
+            var model = new ExamCreateViewModel();
+            model.Subjects = selectListItems;
+            model.Subject = selectListItems.First().Value;
+            model.Name = exam.Name;
+            model.Deadline = exam.Deadline;
+           
+            return View(model);
+           
+      
         }
 
         // POST: Exams/Edit/5
@@ -274,34 +288,51 @@ namespace Zamger2._0.Controllers
         [Microsoft.AspNetCore.Mvc.HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "profesor")]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Time,Deadline")] Exam exam)
+        public async Task<IActionResult> Edit(int id, [Bind("Name,Time,Deadline,Subject")] ExamCreateViewModel e)
         {
-            if (id != exam.Id)
+            if (!ModelState.IsValid)
             {
-                return NotFound();
-            }
+                ClaimsPrincipal currentUser = this.User;
+                var currentUserID = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+                List<Subject> results = new List<Subject>();
+                results.AddRange(await _context.Subjects.Where(t => t.Profesor.Id == currentUserID).ToListAsync());
 
+                var subjects = new List<string>();
+                foreach (Subject su in results)
+                {
+                    subjects.Add(su.Name);
+                }
+                var selectListItems = subjects.Select(x => new SelectListItem() { Value = x, Text = x }).ToList();
+                var model = new ExamCreateViewModel();
+                model.Subjects = selectListItems;
+                model.Subject = selectListItems.First().Value;
+                return View(model);
+            }
             if (ModelState.IsValid)
             {
-                try
+                var exam = await _context.Exams
+              .FirstOrDefaultAsync(h => h.Id == id && h.Subject.ProfesorId == User.GetLoggedInUserId<string>());
+                if (exam == null)
                 {
-                    //_context.Update(exam);
-                    //await _context.SaveChangesAsync();
+                    return NotFound();
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ExamExists(exam.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                System.Diagnostics.Debug.WriteLine("hello");
+                System.Diagnostics.Debug.WriteLine(exam.Name);
+
+                exam.Name = e.Name;
+                exam.Deadline = e.Deadline;
+                exam.Time = e.Time;
+                Subject s = new Subject();
+                s = await _context.Subjects.FirstOrDefaultAsync(m => m.Name == e.Subject);
+                exam.SubjectId = s.Id;
+
+
+                await _context.SaveChangesAsync();
+               
             }
-            return View(exam);
+
+            return RedirectToAction(nameof(Index));
+            //return RedirectToAction(nameof(Details), new { id = homeworkViewModel.Id });
         }
 
         // GET: Exams/Delete/5
