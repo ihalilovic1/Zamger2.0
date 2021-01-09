@@ -54,6 +54,8 @@ namespace Zamger2._0
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                //https in prod handled by nginx
+                app.UseHttpsRedirection();
             }
             else
             {
@@ -67,7 +69,6 @@ namespace Zamger2._0
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
             });
 
-            app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
