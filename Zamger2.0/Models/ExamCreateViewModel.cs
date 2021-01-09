@@ -17,6 +17,10 @@ namespace Zamger2._0.Models
         [BindProperty]
         [Required]
         public DateTime Deadline { get; set; }
+
+        [BindProperty]
+        [Required]
+        public DateTime Time { get; set; }
         [Required]
         public string Subject { get; set; }
         public List<SelectListItem> Subjects { get; set; } = new List<SelectListItem>();
