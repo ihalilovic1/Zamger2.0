@@ -213,6 +213,24 @@ namespace Zamger2._0.Controllers
         [Authorize(Roles = "profesor")]
         public async Task<IActionResult> Create(ExamCreateViewModel exam)
         {
+            if (!ModelState.IsValid)
+            {
+                ClaimsPrincipal currentUser = this.User;
+                var currentUserID = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+                List<Subject> results = new List<Subject>();
+                results.AddRange(await _context.Subjects.Where(t => t.Profesor.Id == currentUserID).ToListAsync());
+
+                var subjects = new List<string>();
+                foreach (Subject s in results)
+                {
+                    subjects.Add(s.Name);
+                }
+                var selectListItems = subjects.Select(x => new SelectListItem() { Value = x, Text = x }).ToList();
+                var model = new ExamCreateViewModel();
+                model.Subjects = selectListItems;
+                model.Subject = selectListItems.First().Value;
+                return View(model);
+            }
             if (ModelState.IsValid)
             {
                 Subject s = new Subject();

@@ -16,10 +16,12 @@ namespace Zamger2._0.Models
         public string Name { get; set; }
         [BindProperty]
         [Required]
+        [CustomDateRange]
         public DateTime Deadline { get; set; }
 
         [BindProperty]
         [Required]
+        [CustomDateRange]
         public DateTime Time { get; set; }
         [Required]
         public string Subject { get; set; }

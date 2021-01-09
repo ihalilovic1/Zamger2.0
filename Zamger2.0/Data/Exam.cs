@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Zamger2._0.Models;
 
 namespace Zamger2._0.Data
 {
@@ -14,10 +15,13 @@ namespace Zamger2._0.Data
         [Required]
         public int Id { get; set; }
         [Required]
+        [MinLength(4)]
         public string Name { get; set; }
         [Required]
+        [CustomDateRange]
         public DateTime Time { get; set; }
         [Required]
+        [CustomDateRange]
         public DateTime Deadline { get; set; }
 
         public int SubjectId { get; set; }
