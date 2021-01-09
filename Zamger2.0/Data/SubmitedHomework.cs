@@ -19,5 +19,9 @@ namespace Zamger2._0.Data
         public int HomeworkId { get; set; }
 
         public DateTime Time { get; set; }
+
+        public int DocumentId { get; set; }
+
+        public virtual Document Document { get; set; }
     }
 }

@@ -1,23 +1,24 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Zamger2._0.Data
+namespace Zamger2._0.Models
 {
-    public class Homework
+    public class HomeworkViewModel
     {
-        [Required]
         public int Id { get; set; }
         [Required]
         public string Name { get; set; }
         [Required]
+        [BindProperty, DisplayFormat(DataFormatString = "{0:dd.MM.yyyy HH:mm}", ApplyFormatInEditMode = true)]
         public DateTime Deadline { get; set; }
-        public virtual Subject Subject { get; set; }
-
+        [Required]
         public int SubjectId { get; set; }
 
-        public virtual IList<SubmitedHomework> SubmitedHomeworks { get; set; }
+        public SelectList Subjects { get; set; }
     }
 }

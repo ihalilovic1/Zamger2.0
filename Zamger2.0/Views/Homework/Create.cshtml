@@ -1,4 +1,4 @@
-﻿@model Zamger2._0.Data.Homework
+﻿@model Zamger2._0.Models.HomeworkViewModel
 
 @{
     ViewData["Title"] = "Create";
@@ -17,19 +17,18 @@
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group input-append date" id="datetimepicker" data-date-format="dd-mm-yyyy">
                 <label asp-for="Deadline" class="control-label"></label>
-                <input asp-for="Deadline" class="form-control" />
+                <input type="datetime" asp-for="Deadline" class="form-control" />
                 <span asp-validation-for="Deadline" class="text-danger"></span>
+
             </div>
             <div class="form-group">
                 <label asp-for="SubjectId" class="control-label"></label>
-                <select asp-for="SubjectId" class ="form-control" asp-items="ViewBag.SubjectId"></select>
+                <select asp-for="SubjectId" class="form-control" asp-items="Model.Subjects"></select>
+                <span asp-validation-for="SubjectId" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="DocumentId" class="control-label"></label>
-                <select asp-for="DocumentId" class ="form-control" asp-items="ViewBag.DocumentId"></select>
-            </div>
+       
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>

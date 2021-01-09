@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Zamger2._0.Data;
+using Zamger2._0.Helpers;
+using Zamger2._0.Models;
 
 namespace Zamger2._0.Controllers
 {
@@ -19,32 +22,27 @@ namespace Zamger2._0.Controllers
         }
 
         // GET: Homework
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            var applicationDbContext = _context.Homeworks.Include(h => h.Document).Include(h => h.Subject);
-            return View(await applicationDbContext.ToListAsync());
-        }
-
-        public async Task<IActionResult> IndexStudent()
-        {
-            
-            return View();
-        }
-
-
-        // GET: Homework/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
+            var homeworks = _context.Homeworks
+                .Include(h => h.Subject)
+                .Where(h => h.Deadline > DateTime.Now);
+            if (User.IsInRole("profesor"))
             {
-                return NotFound();
+                return View(homeworks.Where(h => h.Subject.ProfesorId == User.GetLoggedInUserId<string>()));
             }
 
+            return View(homeworks);
+        }
+
+        // GET: Homework/Details/5
+        public async Task<IActionResult> Details(int id)
+        {
             var homework = await _context.Homeworks
-                .Include(h => h.Document)
                 .Include(h => h.Subject)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (homework == null)
+
+            if (homework == null || (User.IsInRole("profesor") && homework.Subject.ProfesorId != User.GetLoggedInUserId<string>()))
             {
                 return NotFound();
             }
@@ -53,47 +51,77 @@ namespace Zamger2._0.Controllers
         }
 
         // GET: Homework/Create
+        [Authorize(Roles = "profesor")]
         public IActionResult Create()
         {
-            ViewData["DocumentId"] = new SelectList(_context.Documents, "Id", "ContentType");
-            ViewData["SubjectId"] = new SelectList(_context.Subjects, "Id", "Name");
-            return View();
+            var model = new HomeworkViewModel
+            {
+                Subjects = new SelectList(_context.Subjects.Where(s => s.ProfesorId == User.GetLoggedInUserId<string>()), "Id", "Name"),
+                Deadline = DateTime.Now
+            };
+
+            return View(model);
         }
 
         // POST: Homework/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
+        [Authorize(Roles = "profesor")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Deadline,SubjectId,DocumentId")] Homework homework)
+        public async Task<IActionResult> Create([Bind("Name,Deadline,SubjectId")] HomeworkViewModel homeworkViewModel)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Add(homework);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                homeworkViewModel.Subjects = new SelectList(_context.Subjects.Where(s => s.ProfesorId == User.GetLoggedInUserId<string>()), "Id", "Name");
+                return View(homeworkViewModel);
             }
-            ViewData["DocumentId"] = new SelectList(_context.Documents, "Id", "ContentType", homework.DocumentId);
-            ViewData["SubjectId"] = new SelectList(_context.Subjects, "Id", "Name", homework.SubjectId);
-            return View(homework);
+
+            var subject = await _context.Subjects.FindAsync(homeworkViewModel.SubjectId);
+
+            if (subject == null || subject.ProfesorId != User.GetLoggedInUserId<string>())
+            {
+                ModelState.AddModelError("Subject", "Subject not found");
+                homeworkViewModel.Subjects = new SelectList(_context.Subjects.Where(s => s.ProfesorId == User.GetLoggedInUserId<string>()), "Id", "Name");
+                return View(homeworkViewModel);
+            }
+
+            var homework = new Homework
+            {
+                Name = homeworkViewModel.Name,
+                Deadline = homeworkViewModel.Deadline,
+                SubjectId = homeworkViewModel.SubjectId
+            };
+
+            _context.Homeworks.Add(homework);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Details), new { id = homework.Id });
+
         }
 
         // GET: Homework/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        [Authorize(Roles = "profesor")]
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var homework = await _context.Homeworks.FindAsync(id);
+            var homework = await _context.Homeworks
+               .Include(h => h.Subject)
+               .FirstOrDefaultAsync(h => h.Id == id && h.Subject.ProfesorId == User.GetLoggedInUserId<string>());
             if (homework == null)
             {
                 return NotFound();
             }
-            ViewData["DocumentId"] = new SelectList(_context.Documents, "Id", "ContentType", homework.DocumentId);
-            ViewData["SubjectId"] = new SelectList(_context.Subjects, "Id", "Name", homework.SubjectId);
-            return View(homework);
+
+            var homeworkViewModel = new HomeworkViewModel
+            {
+                Id = homework.Id,
+                Name = homework.Name,
+                Deadline = homework.Deadline,
+                SubjectId = homework.SubjectId,
+                Subjects = new SelectList(_context.Subjects, "Id", "Name", homework.SubjectId)
+            };
+     
+            return View(homeworkViewModel);
         }
 
         // POST: Homework/Edit/5
@@ -101,50 +129,37 @@ namespace Zamger2._0.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Deadline,SubjectId,DocumentId")] Homework homework)
+        [Authorize(Roles = "profesor")]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Deadline,SubjectId")] HomeworkViewModel homeworkViewModel)
         {
-            if (id != homework.Id)
+
+            if (!ModelState.IsValid)
+            {
+                homeworkViewModel.Subjects = new SelectList(_context.Subjects.Where(s => s.ProfesorId == User.GetLoggedInUserId<string>()), "Id", "Name");
+                return View(homeworkViewModel);
+            }
+            var homework = await _context.Homeworks
+               .Include(h => h.Subject)
+               .FirstOrDefaultAsync(h => h.Id == homeworkViewModel.Id && h.Subject.ProfesorId == User.GetLoggedInUserId<string>());
+            if (homework == null)
             {
                 return NotFound();
             }
+            homework.Name = homeworkViewModel.Name;
+            homework.SubjectId = homeworkViewModel.SubjectId;
+            homework.Deadline = homeworkViewModel.Deadline;
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(homework);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!HomeworkExists(homework.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["DocumentId"] = new SelectList(_context.Documents, "Id", "ContentType", homework.DocumentId);
-            ViewData["SubjectId"] = new SelectList(_context.Subjects, "Id", "Name", homework.SubjectId);
-            return View(homework);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Details), new { id = homeworkViewModel.Id });
         }
 
         // GET: Homework/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        [Authorize(Roles = "profesor")]
+        public async Task<IActionResult> Delete(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var homework = await _context.Homeworks
-                .Include(h => h.Document)
                 .Include(h => h.Subject)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(h => h.Id == id && h.Subject.ProfesorId == User.GetLoggedInUserId<string>());
             if (homework == null)
             {
                 return NotFound();
@@ -156,17 +171,19 @@ namespace Zamger2._0.Controllers
         // POST: Homework/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "profesor")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var homework = await _context.Homeworks.FindAsync(id);
+            var homework = await _context.Homeworks
+                .Include(h => h.Subject)
+                .FirstOrDefaultAsync(h => h.Id == id && h.Subject.ProfesorId == User.GetLoggedInUserId<string>());
+            if (homework == null)
+            {
+                return NotFound();
+            }
             _context.Homeworks.Remove(homework);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool HomeworkExists(int id)
-        {
-            return _context.Homeworks.Any(e => e.Id == id);
         }
     }
 }
