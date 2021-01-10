@@ -102,17 +102,21 @@ namespace Zamger2._0.Controllers
             ClaimsPrincipal currentUser = this.User;
             var currentUserID = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
             var exist = _context.ExamSignUps.FirstOrDefault(m => m.ExamId == id && m.StudentId == currentUserID);
-            if (exist == null)
-            {
-                _context.ExamSignUps.Add(new ExamSignUp()
+            var exam = _context.Exams.FirstOrDefault(m => m.Id == id);
+            if (exam.Deadline > DateTime.Now) {
+                if (exist == null)
                 {
-                    ExamId = id,
-                    StudentId = currentUserID,
-                    Time = DateTime.Now
-                });
+                    _context.ExamSignUps.Add(new ExamSignUp()
+                    {
+                        ExamId = id,
+                        StudentId = currentUserID,
+                        Time = DateTime.Now
+                    });
 
-                await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync();
+                }
             }
+           
             
 
             return RedirectToAction(nameof(IndexStudent));

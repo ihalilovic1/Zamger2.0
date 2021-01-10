@@ -17,11 +17,10 @@ namespace Zamger2._0.Data
         [Required]
         [MinLength(4)]
         public string Name { get; set; }
-        [Required]
-        [CustomDateRange]
+        [ Required, CustomDateRange, DisplayFormat(DataFormatString = "{0:dd.MM.yyyy HH:mm}", ApplyFormatInEditMode = true)]
         public DateTime Time { get; set; }
-        [Required]
-        [CustomDateRange]
+       
+        [Required, CustomDateRange, DisplayFormat(DataFormatString = "{0:dd.MM.yyyy HH:mm}", ApplyFormatInEditMode = true)]
         public DateTime Deadline { get; set; }
 
         public int SubjectId { get; set; }

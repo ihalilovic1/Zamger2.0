@@ -14,14 +14,12 @@ namespace Zamger2._0.Models
         [Required]
         [MinLength(4)]
         public string Name { get; set; }
-        [BindProperty]
-        [Required]
-        [CustomDateRange]
+        [BindProperty, Required, CustomDateRange, DisplayFormat(DataFormatString = "{0:dd.MM.yyyy HH:mm}", ApplyFormatInEditMode = true)]
         public DateTime Deadline { get; set; }
 
-        [BindProperty]
-        [Required]
-        [CustomDateRange]
+        
+        [BindProperty, Required, CustomDateRange,DisplayFormat(DataFormatString = "{0:dd.MM.yyyy HH:mm}", ApplyFormatInEditMode = true)]
+   
         public DateTime Time { get; set; }
         [Required]
         public string Subject { get; set; }
