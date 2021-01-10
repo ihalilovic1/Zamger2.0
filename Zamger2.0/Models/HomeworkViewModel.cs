@@ -12,6 +12,8 @@ namespace Zamger2._0.Models
     {
         public int Id { get; set; }
         [Required]
+        [RegularExpression(@"^[a-zA-Z0-9-.\s]{4,30}$",
+         ErrorMessage = "Name must be between 4 and 30 characters long. Only letters, numbers, spaces, - and . are allowed.")]
         public string Name { get; set; }
         [Required]
         [BindProperty, DisplayFormat(DataFormatString = "{0:dd.MM.yyyy HH:mm}", ApplyFormatInEditMode = true)]
