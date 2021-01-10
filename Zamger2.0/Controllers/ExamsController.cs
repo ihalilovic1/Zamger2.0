@@ -27,17 +27,18 @@ namespace Zamger2._0.Controllers
         [Authorize(Roles = "profesor")]
         public async Task<IActionResult> Index()
         {
-            ClaimsPrincipal currentUser = this.User;
-            var currentUserID = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var exams = await _context.Exams.Where(t => t.Subject.Profesor.Id == currentUserID).ToListAsync();
+            
+            var exams = await _context.Exams.Where(t => t.Subject.Profesor.Id == User.GetLoggedInUserId<string>()).ToListAsync();
             if (exams != null)
             {
                 foreach (Exam exam in exams)
                 {
                     Subject s = new Subject();
                     s = await _context.Subjects.FirstOrDefaultAsync(m => m.Id == exam.SubjectId);
-
-                    exam.Subject = s;
+                    if (s != null) {
+                        exam.Subject = s;
+                    }
+                    
                 }
                 
             }
@@ -46,9 +47,7 @@ namespace Zamger2._0.Controllers
         [Authorize(Roles = "student")]
         public async Task<IActionResult> IndexStudent()
         {
-            ClaimsPrincipal currentUser = this.User;
-            var currentUserID = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
-
+            
             var exams = await _context.Exams.Where(x => x.Deadline >= DateTime.Now).ToListAsync();
             if (exams != null)
             {
@@ -64,16 +63,21 @@ namespace Zamger2._0.Controllers
                         {
                             IdentityUser u = new IdentityUser();
                             u = await _context.Users.FirstOrDefaultAsync(m => m.Id.Equals(signup.StudentId));
-                            signup.Student = u;
+                            if (u != null) {
+                                signup.Student = u;
+                            }
+                            
                             
                         }
-
+                        exam.ExamSignUps = examSignUps;
                     }
 
-                    exam.ExamSignUps = examSignUps;
-                    exam.Subject = s;
+                    if (s != null) {
+                        exam.Subject = s;
+                    }
+                   
                     
-                    ViewBag.Current = currentUserID;
+                    ViewBag.Current = User.GetLoggedInUserId<string>();
 
                     //var a = exam.ExamSignUps.FirstOrDefault(m => m.Student.Id.Equals(currentUserID));
                     
@@ -95,21 +99,18 @@ namespace Zamger2._0.Controllers
         [Authorize(Roles = "student")]
         public async Task<IActionResult> SignUp(int id)
         {
-            System.Diagnostics.Debug.WriteLine("evo me");
-            System.Diagnostics.Debug.WriteLine(id);
             
 
-            ClaimsPrincipal currentUser = this.User;
-            var currentUserID = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var exist = _context.ExamSignUps.FirstOrDefault(m => m.ExamId == id && m.StudentId == currentUserID);
+           
+            var exist = _context.ExamSignUps.FirstOrDefault(m => m.ExamId == id && m.StudentId == User.GetLoggedInUserId<string>());
             var exam = _context.Exams.FirstOrDefault(m => m.Id == id);
-            if (exam.Deadline > DateTime.Now) {
+            if (exam!=null && exam.Deadline > DateTime.Now) {
                 if (exist == null)
                 {
                     _context.ExamSignUps.Add(new ExamSignUp()
                     {
                         ExamId = id,
-                        StudentId = currentUserID,
+                        StudentId = User.GetLoggedInUserId<string>(),
                         Time = DateTime.Now
                     });
 
@@ -126,19 +127,19 @@ namespace Zamger2._0.Controllers
         [Authorize(Roles = "student")]
         public async Task<IActionResult> SignOut(int id)
         {
-            System.Diagnostics.Debug.WriteLine("evo me");
-            System.Diagnostics.Debug.WriteLine(id);
 
-
-            ClaimsPrincipal currentUser = this.User;
-            var currentUserID = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var exist = _context.ExamSignUps.FirstOrDefault(m => m.ExamId == id && m.StudentId == currentUserID);
-            if (exist != null)
+            
+            var exist = _context.ExamSignUps.FirstOrDefault(m => m.ExamId == id && m.StudentId == User.GetLoggedInUserId<string>());
+            var exam = _context.Exams.FirstOrDefault(m => m.Id == id);
+            if (exam != null && exam.Deadline > DateTime.Now)
             {
+                if (exist != null)
+                {
 
-                var examSignUp = await _context.ExamSignUps.FindAsync(exist.Id);
-                _context.ExamSignUps.Remove(examSignUp);
-                await _context.SaveChangesAsync();
+                    var examSignUp = await _context.ExamSignUps.FindAsync(exist.Id);
+                    _context.ExamSignUps.Remove(examSignUp);
+                    await _context.SaveChangesAsync();
+                }
             }
 
 
@@ -168,7 +169,10 @@ namespace Zamger2._0.Controllers
                 {
                     IdentityUser u = new IdentityUser();
                     u = await _context.Users.FirstOrDefaultAsync(m => m.Id.Equals(signup.StudentId));
-                    signup.Student = u;
+                    if (u != null) {
+                        signup.Student = u;
+                    }
+                    
                 }
                 exam.ExamSignUps = examSignUps;
             }
@@ -177,8 +181,10 @@ namespace Zamger2._0.Controllers
 
                 Subject s = new Subject();
                 s = await _context.Subjects.FirstOrDefaultAsync(m => m.Id==exam.SubjectId);
-
-                exam.Subject = s;
+                if (s != null) {
+                    exam.Subject = s;
+                }
+                
             }
 
             if (exam == null)
@@ -193,15 +199,17 @@ namespace Zamger2._0.Controllers
         // GET: Exams/Create
         public async Task<IActionResult> CreateAsync()
         {
-            ClaimsPrincipal currentUser = this.User;
-            var currentUserID = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+            
             List<Subject> results = new List<Subject>();
-            results.AddRange(await _context.Subjects.Where(t => t.Profesor.Id == currentUserID).ToListAsync());
-
+            results.AddRange(await _context.Subjects.Where(t => t.Profesor.Id == User.GetLoggedInUserId<string>()).ToListAsync());
             var subjects = new List<string>();
-            foreach (Subject s in results)
-            {
-                subjects.Add(s.Name);
+            if (results != null) {
+                
+                foreach (Subject s in results)
+                {
+                    subjects.Add(s.Name);
+                }
+                
             }
             var selectListItems = subjects.Select(x => new SelectListItem() { Value = x, Text = x }).ToList();
             var model = new ExamCreateViewModel();
@@ -220,16 +228,18 @@ namespace Zamger2._0.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ClaimsPrincipal currentUser = this.User;
-                var currentUserID = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+                
                 List<Subject> results = new List<Subject>();
-                results.AddRange(await _context.Subjects.Where(t => t.Profesor.Id == currentUserID).ToListAsync());
-
+                results.AddRange(await _context.Subjects.Where(t => t.Profesor.Id == User.GetLoggedInUserId<string>()).ToListAsync());
                 var subjects = new List<string>();
-                foreach (Subject s in results)
-                {
-                    subjects.Add(s.Name);
+                if (results != null) {
+                    foreach (Subject s in results)
+                    {
+                        subjects.Add(s.Name);
+                    }
                 }
+                
+                
                 var selectListItems = subjects.Select(x => new SelectListItem() { Value = x, Text = x }).ToList();
                 var model = new ExamCreateViewModel();
                 model.Subjects = selectListItems;
@@ -240,14 +250,17 @@ namespace Zamger2._0.Controllers
             {
                 Subject s = new Subject();
                 s = await _context.Subjects.FirstOrDefaultAsync(m => m.Name == exam.Subject);
-                _context.Exams.Add(new Exam()
-                {
+                if (s != null) {
+                    _context.Exams.Add(new Exam()
+                    {
 
-                    Name = exam.Name,
-                    Deadline = exam.Deadline,
-                    Time = exam.Time,
-                    Subject = s
-                });
+                        Name = exam.Name,
+                        Deadline = exam.Deadline,
+                        Time = exam.Time,
+                        Subject = s
+                    });
+                }
+                
 
                 await _context.SaveChangesAsync();
                 
@@ -268,12 +281,15 @@ namespace Zamger2._0.Controllers
             }
             List<Subject> results = new List<Subject>();
             results.AddRange(await _context.Subjects.Where(t => t.Profesor.Id == User.GetLoggedInUserId<string>()).ToListAsync());
-
             var subjects = new List<string>();
-            foreach (Subject s in results)
-            {
-                subjects.Add(s.Name);
+            if (results != null) {
+                foreach (Subject s in results)
+                {
+                    subjects.Add(s.Name);
+                }
             }
+            
+            
             var selectListItems = subjects.Select(x => new SelectListItem() { Value = x, Text = x }).ToList();
             var model = new ExamCreateViewModel();
             model.Subjects = selectListItems;
@@ -296,16 +312,19 @@ namespace Zamger2._0.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ClaimsPrincipal currentUser = this.User;
-                var currentUserID = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+                
                 List<Subject> results = new List<Subject>();
-                results.AddRange(await _context.Subjects.Where(t => t.Profesor.Id == currentUserID).ToListAsync());
+                results.AddRange(await _context.Subjects.Where(t => t.Profesor.Id == User.GetLoggedInUserId<string>()).ToListAsync());
 
                 var subjects = new List<string>();
-                foreach (Subject su in results)
-                {
-                    subjects.Add(su.Name);
+
+                if (results != null) {
+                    foreach (Subject su in results)
+                    {
+                        subjects.Add(su.Name);
+                    }
                 }
+                
                 var selectListItems = subjects.Select(x => new SelectListItem() { Value = x, Text = x }).ToList();
                 var model = new ExamCreateViewModel();
                 model.Subjects = selectListItems;
@@ -327,7 +346,10 @@ namespace Zamger2._0.Controllers
                 exam.Time = e.Time;
                 Subject s = new Subject();
                 s = await _context.Subjects.FirstOrDefaultAsync(m => m.Name == e.Subject);
-                exam.SubjectId = s.Id;
+                if (s != null) {
+                    exam.SubjectId = s.Id;
+                }
+               
 
 
                 await _context.SaveChangesAsync();
@@ -335,7 +357,7 @@ namespace Zamger2._0.Controllers
             }
 
             return RedirectToAction(nameof(Index));
-            //return RedirectToAction(nameof(Details), new { id = homeworkViewModel.Id });
+            
         }
 
         // GET: Exams/Delete/5
@@ -364,8 +386,11 @@ namespace Zamger2._0.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var exam = await _context.Exams.FindAsync(id);
-            _context.Exams.Remove(exam);
-            await _context.SaveChangesAsync();
+            if (exam != null) {
+                _context.Exams.Remove(exam);
+                await _context.SaveChangesAsync();
+            }
+           
             return RedirectToAction(nameof(Index));
         }
 
