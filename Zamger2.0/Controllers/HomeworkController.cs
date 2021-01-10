@@ -194,7 +194,7 @@ namespace Zamger2._0.Controllers
             }
             var document = new Document
             {
-                Name = $"homework_{homework.Id}_{DateTime.Now}",
+                Name = $"homework_{homework.Id}_{Guid.NewGuid()}",
                 ContentType = submitViewModel.Document.ContentType,
                 Extension = extension
             };
