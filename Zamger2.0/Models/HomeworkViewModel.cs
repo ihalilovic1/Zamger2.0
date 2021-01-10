@@ -20,5 +20,8 @@ namespace Zamger2._0.Models
         public int SubjectId { get; set; }
 
         public SelectList Subjects { get; set; }
+
+        public List<HomeworkReviewViewModel> Submits { get; set; } = new List<HomeworkReviewViewModel>();
+        public string SubjectName { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿@model Zamger2._0.Data.Homework
+﻿@model Zamger2._0.Models.HomeworkViewModel
 
 @{
     ViewData["Title"] = "Details";
@@ -10,23 +10,23 @@
     <h4>Homework</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Name)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Name)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Deadline)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Deadline)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Subject)
+        <dt class="col-sm-2">
+            Subject
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Subject.Name)
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.SubjectName)
         </dd>
     </dl>
 </div>
@@ -43,3 +43,17 @@
 
     | <a asp-action="Index">Back to List</a>
 </div>
+@if (User.IsInRole("profesor"))
+{
+    <hr />
+    <div>
+        <h4>Submits</h4>
+        <dl class="row">
+            @foreach (var item in Model.Submits)
+            {
+                <dt class="col-sm-2">@item.StudentName</dt>
+                <dd class="col-10"><a href="/File/Get/@item.FileName" target="_blank">@item.FileName</a></dd>
+            }
+        </dl>
+    </div>
+}

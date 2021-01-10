@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -48,7 +49,29 @@ namespace Zamger2._0.Controllers
                 return NotFound();
             }
 
-            return View(homework);
+            var homeworkViewModel = new HomeworkViewModel
+            {
+                Id = homework.Id,
+                Name = homework.Name,
+                Deadline = homework.Deadline,
+                SubjectName = homework.Subject.Name
+            };
+
+            if (User.IsInRole("profesor"))
+            {
+                homeworkViewModel.Submits = _context.SubmitedHomeworks
+                    .Include(sh => sh.Student)
+                    .Include(sh => sh.Document)
+                    .Where(sh => sh.HomeworkId == homework.Id)
+                    .Select(sh => 
+                        new HomeworkReviewViewModel
+                        {
+                            StudentName = sh.Student.UserName,
+                            FileName = $"{sh.Document.Name}{sh.Document.Extension}"
+                        }
+                    ).ToList();
+            }
+            return View(homeworkViewModel);
         }
 
         // GET: Homework/Create
