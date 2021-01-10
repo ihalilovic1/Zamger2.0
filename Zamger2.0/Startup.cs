@@ -58,7 +58,7 @@ namespace Zamger2._0
                 });
             }); ;
 
-            //Seed.Initialize(services.BuildServiceProvider(), "Test123!");
+            Seed.Initialize(services.BuildServiceProvider(), "Test123!");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

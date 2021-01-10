@@ -316,8 +316,7 @@ namespace Zamger2._0.Controllers
                 {
                     return NotFound();
                 }
-                System.Diagnostics.Debug.WriteLine("hello");
-                System.Diagnostics.Debug.WriteLine(exam.Name);
+                
 
                 exam.Name = e.Name;
                 exam.Deadline = e.Deadline;

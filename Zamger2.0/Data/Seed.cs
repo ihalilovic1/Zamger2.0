@@ -21,9 +21,17 @@ namespace Zamger2._0.Data
             await EnsureRole(serviceProvider, profesor, "profesor");
             await EnsureRole(serviceProvider, student, "student");
 
+            await AddSubject(serviceProvider, "Tehnologije sigurnosti", profesor);
+            await AddSubject(serviceProvider, "Računarski sistemi u realnom vremenu", profesor);
+            await AddSubject(serviceProvider, "Metode i primjena vještačke inteligencije", profesor);
+            await AddSubject(serviceProvider, "Napredni softver inženjering", profesor);
+
             //Seed rest of the data
             SeedDB(context);
+
         }
+
+       
 
         private static async Task<string> EnsureUser(IServiceProvider serviceProvider,
                                                     string testUserPw, string UserName)
@@ -47,6 +55,29 @@ namespace Zamger2._0.Data
             }
 
             return user.Id;
+        }
+        private static async Task<string> AddSubject(IServiceProvider serviceProvider, string subject, string profesor)
+        {
+            var context = serviceProvider.GetService<ApplicationDbContext>();
+
+            var s = context.Subjects.FirstOrDefault(m => m.Name.Equals(subject) && m.ProfesorId.Equals(profesor));
+           
+            if (s == null)
+            {
+                //System.Diagnostics.Debug.WriteLine("hello");
+                //System.Diagnostics.Debug.WriteLine(exam.Name);
+                context.Subjects.Add(new Subject()
+                {
+                    Name = subject,
+                    ProfesorId = profesor
+                });
+
+                //context.SaveChanges();
+
+            }
+
+
+            return subject;
         }
 
         private static async Task<IdentityResult> EnsureRole(IServiceProvider serviceProvider,
