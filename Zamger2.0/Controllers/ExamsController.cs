@@ -49,7 +49,7 @@ namespace Zamger2._0.Controllers
             ClaimsPrincipal currentUser = this.User;
             var currentUserID = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            var exams = await _context.Exams.Where(x => x.Deadline <= DateTime.Now).ToListAsync();
+            var exams = await _context.Exams.Where(x => x.Deadline >= DateTime.Now).ToListAsync();
             if (exams != null)
             {
                 foreach (Exam exam in exams)
